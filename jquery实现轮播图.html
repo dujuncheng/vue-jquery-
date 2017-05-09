@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style lang="">
+        /*滑动轮播*/      
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+      
+        .window,
+        .window2 {
+            width: 500px;
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+            text-align: center;
+            margin: 0 auto;
+        }
+        
+        .window>.pic {
+            width: 1520px;
+            position: absolute;
+        }
+        
+        .window>.pic>li {
+            float: left;
+        }
+        
+        .pic img {
+            width: 500px;
+            height: 300px;
+        }
+        
+        .btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: absolute;
+            display: inline-block;
+            background-color: rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            text-align: center;
+            line-height: 40px;
+            color: white;
+            font-family: '微软雅黑';
+            font-size: 20px;
+            margin-top: 140px;
+            top: -20px;
+            cursor: pointer;
+        }
+        
+        .btn-prev {
+            left: 10px;
+        }
+        
+        .btn-next {
+            right: 10px;
+        }
+        
+        .indexCt {
+            display: inline-block;
+        }
+        
+        .pageIndex {
+            position: relative;
+            top: 240px;
+        }
+        
+        .pageIndex>li {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: white;
+            float: left;
+            margin: 0 6px;
+            cursor: pointer;
+        }
+        
+        .pageIndex>.active {
+            background-color: gray;
+        }
+        /*渐变轮播*/
+        
+        .window2>.pic {
+            position: absolute;
+        }
+        
+        .window2>.pic>li {
+            position: absolute;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="window">
+        <ul class="pic">
+            <li>
+                <a href="javascript:;"><img src="http://upload-images.jianshu.io/upload_images/3360875-5625658440cb542d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></a>
+            </li>
+            <li>
+                <a href="javascript:;"><img src="http://upload-images.jianshu.io/upload_images/3360875-b70e9d81d26e2a27.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></a>
+            </li>
+            <li>
+                <a href="javascript:;"><img src="http://upload-images.jianshu.io/upload_images/3360875-dc724649454c2ddc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></a>
+            </li>
+            <li>
+                <a href="javascript:;"><img src="http://upload-images.jianshu.io/upload_images/3360875-d2148a1bb7ea9d21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></a>
+            </li>
+        </ul>
+        <a href="javascript:;" class="btn btn-prev">&lt;</a>
+        <a href="javascript:;" class="btn btn-next">&gt;</a>
+        <div class="indexCt">
+            <ul class="pageIndex clearfix">
+            </ul>
+        </div>
+    </div>
+    <script src='https://cdn.bootcss.com/jquery/3.2.1/jquery.js'>
+    </script>
+    <script>
+        function Carousel($node) {
+            // 选择ul
+            this.$pic = $node.find('.pic')
+            // 宽度
+            this.$picWidth = this.$pic.children().width()
+            // 队列有几个
+            this.picLength = this.$pic.children().length
+            // 找到按钮
+            this.$btnPrev = $node.find('.btn-prev')
+            this.$btnNext = $node.find('.btn-next')
+            // 找到指示器
+            this.$pageIndex = $node.find('.pageIndex')
+            this.mark = 0
+            this.lock = false
+
+            this.init()
+            this.bind()
+            this.autoPlay()
+        }
+
+
+        Carousel.prototype = {
+            init: function() {
+                var $picFirst = this.$pic.children().eq(0).clone(),
+                    $picLast = this.$pic.children().eq(this.picLength - 1).clone()
+
+                this.$pic.prepend($picLast)
+                this.$pic.append($picFirst)
+                // 把ul的宽度变成一个长长的火车
+                this.$pic.width(this.$picWidth * this.$pic.children().length)
+                // 火车头漏出一头
+                this.$pic.css({
+                    'left': -this.$picWidth
+                })
+                for (var i = 0; i < this.picLength; i++) {
+                    var $li = $('<li></li>')
+                    this.$pageIndex.append($li)
+                }
+
+                this.$pageIndex.children().eq(0).addClass('active')
+            },
+
+            playNext: function() {
+                var _this = this
+                if (this.lock) {
+                    return
+                } else {
+                    this.lock = true
+                    this.$pic.animate({
+                        'left': '-=' + this.$picWidth
+                    }, function() {
+                        _this.mark++
+                            if (_this.mark === _this.picLength) {
+                                _this.$pic.css('left', -_this.$picWidth)
+                                _this.mark = 0
+                            }
+                        _this.lock = false
+                        _this.showBullet()
+                    })
+                }
+            },
+
+
+            playPrev: function() {
+                var _this = this
+                if (this.lock) {
+                    return
+                } else {
+                    this.lock = true
+                    this.$pic.animate({
+                        'left': '+=' + this.$picWidth
+                    }, function() {
+                        _this.mark--
+                            if (_this.mark < 0) {
+                                _this.$pic.css('left', -(_this.picLength * _this.$picWidth))
+                                _this.mark = _this.picLength - 1
+                            }
+                        _this.lock = false
+                        _this.showBullet()
+                    })
+                }
+            },
+
+            showBullet: function() {
+                this.$pageIndex.children().removeClass('active')
+                this.$pageIndex.children().eq(this.mark).addClass('active')
+
+            },
+
+            bind: function() {
+                var _this = this
+
+                this.$btnNext.on('click', function() {
+                    _this.playNext()
+                })
+
+                this.$btnPrev.on('click', function() {
+                    _this.playPrev()
+                })
+
+                this.$pageIndex.on('click', 'li', function() {
+                    _this.mark = _this.$pageIndex.children().index($(this))
+                    _this.showBullet()
+                    _this.$pic.animate({
+                        'left': -(_this.mark + 1) * _this.$picWidth
+                    })
+                })
+            },
+
+            autoPlay: function() {
+                var _this = this
+                setInterval(function() {
+                    _this.playNext()
+                }, 3000)
+            }
+        }
+
+        new Carousel($('.window'))
+    </script>
+</body>
+
+</html>
